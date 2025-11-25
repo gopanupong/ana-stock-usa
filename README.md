@@ -1,11 +1,49 @@
-<div align="center">
+# Damodaran Stock Analyzer
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+Web application for analyzing US stocks using Aswath Damodaran's valuation methodology, powered by Gemini AI.
 
-  <h1>Built with AI Studio</h2>
+## 🚀 How to Deploy on Vercel
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+### 1. Prerequisites
+- A GitHub/GitLab/Bitbucket account.
+- A Vercel account.
+- A Google Gemini API Key.
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+### 2. Setup (Local)
+1. Initialize a git repository:
+   ```bash
+   git init
+   git add .
+   git commit -m "Initial commit"
+   ```
+2. Push this code to your GitHub repository.
 
-</div>
+### 3. Deploy to Vercel
+1. Go to [Vercel Dashboard](https://vercel.com/dashboard) and click **"Add New..."** -> **"Project"**.
+2. Import your GitHub repository.
+3. Vercel will auto-detect that this is a **Vite** project.
+4. **Important:** In the "Environment Variables" section, add your API key:
+   - **Key:** `API_KEY`
+   - **Value:** `Your_Actual_Gemini_API_Key`
+5. Click **Deploy**.
+
+## 🛠️ Tech Stack
+- **Framework:** React + Vite
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **AI:** Google Gemini (via `@google/genai` SDK)
+- **Charts:** Recharts
+
+## 💻 Local Development
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Create `.env` file:
+   ```
+   API_KEY=your_api_key_here
+   ```
+3. Run dev server:
+   ```bash
+   npm run dev
+   ```

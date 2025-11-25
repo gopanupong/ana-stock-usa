@@ -1,0 +1,5 @@
+{
+  "name": "Damodaran Stock Analyzer",
+  "description": "AI-powered stock valuation tool inspired by Aswath Damodaran's methodology, providing Fair, Bear, and Best case scenarios for US stocks.",
+  "requestFramePermissions": []
+}
