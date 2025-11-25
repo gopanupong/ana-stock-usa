@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AnalysisState, ValuationData } from './types';
+import { AnalysisState } from './types';
 import { analyzeStock } from './services/geminiService';
 import AnalysisChart from './components/AnalysisChart';
 import MetricsGrid from './components/MetricsGrid';

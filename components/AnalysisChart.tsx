@@ -6,7 +6,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   Cell,
   ReferenceLine
@@ -40,11 +39,6 @@ const AnalysisChart: React.FC<Props> = ({ data }) => {
       color: '#22c55e', // Green-500
     },
   ];
-
-  // Calculate domain to make the chart look nice
-  const values = chartData.map(d => d.value);
-  const minVal = Math.min(...values) * 0.8;
-  const maxVal = Math.max(...values) * 1.1;
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
