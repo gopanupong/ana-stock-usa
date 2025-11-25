@@ -1,79 +1,50 @@
-import { GoogleGenAI, Type, Schema } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import { ValuationData } from "../types";
 
 // Initialize the API client
-// Note: In a real production app, ensure API_KEY is handled securely on the server-side via Next.js API routes or similar.
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
-
-const valuationSchema: Schema = {
-  type: Type.OBJECT,
-  properties: {
-    ticker: { type: Type.STRING, description: "The stock ticker symbol (e.g., AAPL)" },
-    companyName: { type: Type.STRING, description: "Full company name" },
-    currentPriceEstimate: { type: Type.NUMBER, description: "Estimated current market price based on knowledge" },
-    currency: { type: Type.STRING, description: "Currency code (e.g., USD)" },
-    fairValue: { type: Type.NUMBER, description: "The calculated Fair Value based on base case assumptions" },
-    bearValue: { type: Type.NUMBER, description: "The calculated Bear Case Value (pessimistic)" },
-    bestValue: { type: Type.NUMBER, description: "The calculated Best Case Value (optimistic)" },
-    summary: { type: Type.STRING, description: "A concise executive summary of the valuation reasoning in Thai language." },
-    valuationDate: { type: Type.STRING, description: "Date of analysis (YYYY-MM-DD)" },
-    metrics: {
-      type: Type.ARRAY,
-      description: "Key financial metrics used in the Damodaran valuation model",
-      items: {
-        type: Type.OBJECT,
-        properties: {
-          label: { type: Type.STRING, description: "Name of the metric (e.g., Cost of Capital, Beta)" },
-          value: { type: Type.STRING, description: "The value of the metric formatted as string (e.g., '8.5%')" },
-          description: { type: Type.STRING, description: "Short explanation of this metric in Thai" }
-        },
-        required: ["label", "value", "description"]
-      }
-    }
-  },
-  required: [
-    "ticker", 
-    "companyName", 
-    "currentPriceEstimate", 
-    "fairValue", 
-    "bearValue", 
-    "bestValue", 
-    "summary", 
-    "metrics",
-    "currency",
-    "valuationDate"
-  ]
-};
 
 export const analyzeStock = async (ticker: string): Promise<ValuationData> => {
   try {
     const model = "gemini-2.5-flash";
     const prompt = `
       Act as a senior financial analyst following Aswath Damodaran's valuation methodology.
-      Perform a comprehensive valuation analysis for the US stock ticker: "${ticker}".
-
-      Generate a Fair Value, Bear Value, and Best Value based on Discounted Cash Flow (DCF) or relevant intrinsic value models.
       
+      Step 1: USE GOOGLE SEARCH to find the EXACT CURRENT REAL-TIME PRICE of the US stock ticker: "${ticker}".
+      Step 2: Perform a comprehensive valuation analysis based on that current price.
+      Step 3: Generate a Fair Value, Bear Value, and Best Value based on Discounted Cash Flow (DCF).
+
       You must estimate:
       1. Risk-Free Rate
       2. Equity Risk Premium (ERP)
-      3. Beta (Bottom-up if possible, or regression)
-      4. Cost of Equity & Cost of Capital (WACC)
+      3. Beta
+      4. Cost of Equity & WACC
       5. Terminal Growth Rate
-      6. Return on Invested Capital (ROIC)
 
-      Provide the result in Thai language for descriptions and summary, but keep technical financial terms in English where appropriate (e.g., WACC, Beta).
-      
-      The 'currentPriceEstimate' should be your best estimate of the recent trading price.
+      Output ONLY a valid JSON object with the following structure (do not use Markdown code blocks if possible, or I will parse them out):
+      {
+        "ticker": "string",
+        "companyName": "string",
+        "currentPriceEstimate": number, // MUST be the real-time price found from search
+        "currency": "string",
+        "fairValue": number,
+        "bearValue": number,
+        "bestValue": number,
+        "summary": "string (A concise executive summary in Thai language)",
+        "valuationDate": "YYYY-MM-DD",
+        "metrics": [
+          { "label": "string", "value": "string", "description": "string (in Thai)" }
+        ]
+      }
     `;
 
     const response = await ai.models.generateContent({
       model: model,
       contents: prompt,
       config: {
-        responseMimeType: "application/json",
-        responseSchema: valuationSchema,
-        temperature: 0.2, // Low temperature for more analytical/consistent results
+        tools: [{ googleSearch: {} }],
+        // responseMimeType: "application/json", // Removed to allow tool use flexibility
+        temperature: 0.2, 
       },
     });
 
@@ -82,7 +53,24 @@ export const analyzeStock = async (ticker: string): Promise<ValuationData> => {
       throw new Error("No data returned from AI");
     }
 
-    const data = JSON.parse(text) as ValuationData;
+    // Extract JSON from potential Markdown blocks (```json ... ```)
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      console.error("Raw response:", text);
+      throw new Error("Invalid response format from AI");
+    }
+
+    const data = JSON.parse(jsonMatch[0]) as ValuationData;
+
+    // Extract grounding sources (URLs)
+    const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+    const sourceUrls = chunks
+      .map((chunk: any) => chunk.web?.uri)
+      .filter((uri: string) => uri);
+    
+    // Remove duplicates
+    data.sourceUrls = [...new Set(sourceUrls)];
+
     return data;
 
   } catch (error) {

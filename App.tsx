@@ -134,7 +134,7 @@ function App() {
                 </p>
                 <div className="mt-4 pt-4 border-t border-slate-100">
                   <p className="text-xs text-slate-400 italic">
-                    *หมายเหตุ: ผลลัพธ์นี้สร้างโดย AI (Gemini) โดยใช้แบบจำลองทางการเงิน การลงทุนมีความเสี่ยง โปรดใช้วิจารณญาณและตรวจสอบข้อมูลจริงจากแหล่งอื่นประกอบ
+                    *หมายเหตุ: ผลลัพธ์นี้สร้างโดย AI (Gemini) โดยใช้แบบจำลองทางการเงิน การลงทุนมีความเสี่ยง โปรดใช้วิจารณญาณ
                   </p>
                 </div>
               </div>
@@ -145,6 +145,22 @@ function App() {
               <h3 className="text-xl font-bold text-slate-800 mb-4">Damodaran Style Assumptions</h3>
               <MetricsGrid metrics={state.data.metrics} />
             </div>
+
+            {/* Sources */}
+            {state.data.sourceUrls && state.data.sourceUrls.length > 0 && (
+              <div className="bg-slate-100 rounded-lg p-4 text-xs text-slate-500 break-all">
+                <span className="font-semibold block mb-2">🔎 Sources (Real-time Price & Data):</span>
+                <ul className="list-disc list-inside space-y-1">
+                  {state.data.sourceUrls.map((url, idx) => (
+                    <li key={idx}>
+                      <a href={url} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 underline">
+                        {url}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
           </div>
         )}

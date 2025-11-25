@@ -15,6 +15,7 @@ export interface ValuationData {
   summary: string;
   metrics: KeyMetric[];
   valuationDate: string;
+  sourceUrls?: string[];
 }
 
 export interface AnalysisState {
